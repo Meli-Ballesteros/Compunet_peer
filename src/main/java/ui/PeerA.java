@@ -7,7 +7,8 @@ public class PeerA {
         UDPConnection connection = UDPConnection.getInstance();
         connection.setPort(5000);
         connection.start(); // Inicia recepción
-        connection.startSendingLoop("192.168.1.15", 5001); // Inicia envío
+        connection.startSendingLoop("192.168.131.200", 5001); // Inicia envío
     }
 }
+
 
