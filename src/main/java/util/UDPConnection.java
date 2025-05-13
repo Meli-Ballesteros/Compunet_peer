@@ -3,6 +3,7 @@ package util;
 
 import java.io.IOException;
 import java.net.*;
+import java.util.Scanner;
 
 public class UDPConnection extends Thread {
     private static UDPConnection instance;
@@ -33,53 +34,40 @@ public class UDPConnection extends Thread {
     @Override
     public void run(){
         try {
-            // se define una estructura para guardar la información
             byte[] buffer = new byte[1024];
+            DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 
-            // definen el paquete donde se guarda el mensaje recivido
-            DatagramPacket packet = new DatagramPacket(buffer, 1024);
+            System.out.println("Esperando mensajes...");
 
-            System.out.println("Waiting for a a message ... ");
+            while (true) {
+                socket.receive(packet);
+                String msj = new String(packet.getData(), 0, packet.getLength()).trim();
+                System.out.println("Mensaje recibido de " + packet.getAddress() + ": " + msj);
+            }
 
-            // El socket establce la conexión con el sender
-            // Almacena el packet del sender en un packet
-            // de recepción
-            socket.receive(packet);
-            System.out.println("Messsaje from sender: ");
-
-            // decodificamos de bytes a string
-            String msj = new String(packet.getData()).trim();
-
-            System.out.println("\n" +
-                    "message from: "+ packet.getAddress() + ": " + msj );
-
-            socket.close();
-        }catch (IOException e){
+        } catch (IOException e){
             e.printStackTrace();
         }
     }
 
-    public void sendDatagram(String msj, String ipDest, int portDest){
-       new Thread(
-               () -> {
-                   try {
-                      InetAddress ipAddress = InetAddress.getByName(ipDest);
 
-                       DatagramPacket packet = new DatagramPacket(
-                               msj.getBytes(), // Message
-                               msj.length()    // length message
-                       );
+    public void startSendingLoop(String ipDest, int portDest) {
+        new Thread(() -> {
+            try {
+                InetAddress ipAddress = InetAddress.getByName(ipDest);
+                Scanner scanner = new Scanner(System.in);
 
-                       //					dest. ip     | dest. port
-                       socket.connect(ipAddress, portDest);
-                       // se empaqueta y se le pasa al socket
-                       socket.send(packet);
-                   }
-                   catch (IOException e){
-                        e.printStackTrace();
-                   }
-               }
-       ).start();
+                while (true) {
+                    System.out.print("Escribe un mensaje: ");
+                    String msj = scanner.nextLine();
+                    DatagramPacket packet = new DatagramPacket(
+                            msj.getBytes(), msj.length(), ipAddress, portDest
+                    );
+                    socket.send(packet);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
-
 }

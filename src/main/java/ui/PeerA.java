@@ -6,9 +6,8 @@ public class PeerA {
     public static void main(String[] args) {
         UDPConnection connection = UDPConnection.getInstance();
         connection.setPort(5000);
-        connection.start();
-
-        String msj = "Hola desde el Peer A";
-        connection.sendDatagram(msj, "127.0.0.1", 5001);
+        connection.start(); // Inicia recepción
+        connection.startSendingLoop("192.168.1.15", 5001); // Inicia envío
     }
 }
+
